@@ -1,6 +1,7 @@
 """
 Editorial Bot - Editorial Generator
 Uses Claude to write original editorials based on recent cinema news.
+Fetches relevant images from Pexels.
 """
 
 import json
@@ -9,7 +10,8 @@ import hashlib
 from datetime import datetime, timezone
 
 import anthropic
-from config import ANTHROPIC_API_KEY, ANTHROPIC_MODEL, AUTHOR_BYLINE
+import requests
+from config import ANTHROPIC_API_KEY, ANTHROPIC_MODEL, AUTHOR_BYLINE, PEXELS_API_KEY
 
 log = logging.getLogger(__name__)
 
@@ -42,20 +44,55 @@ Based on these recent stories, write an ORIGINAL EDITORIAL that:
 - Offers your professional opinion and analysis (not just a summary)
 - Is relevant and useful to working camera department professionals
 - Has a strong, attention-grabbing headline
-- Is 3-5 paragraphs long
+- Is 5-7 paragraphs long with substantial, detailed analysis in each paragraph
 - Feels like a column in American Cinematographer or No Film School
 
 Respond ONLY with valid JSON in this exact format (no markdown, no backticks):
 {{
     "title": "Your Editorial Headline Here",
     "summary": "A 2-3 sentence teaser that hooks the reader.",
-    "body": "The full editorial text, 3-5 paragraphs. Use plain text, no HTML.",
+    "body": "The full editorial text, 5-7 substantial paragraphs. Separate each paragraph with two newlines. Use plain text, no HTML.",
     "category": "One of: Camera Technology, Lens Technology, Streaming Industry, Virtual Production, Market Trends, Firmware Update",
     "companies": ["Company1", "Company2"],
     "technologies": ["Tech1", "Tech2"],
     "tags": ["tag1", "tag2", "tag3"],
-    "industry_impact": "One sentence on why this matters for the industry."
+    "industry_impact": "One sentence on why this matters for the industry.",
+    "image_search": "A 2-4 word search query for finding a relevant cinematic photo (e.g. 'cinema camera filmmaking', 'film set production', 'camera lens closeup'). Focus on professional filmmaking imagery."
 }}"""
+
+
+def _fetch_pexels_image(query: str) -> str | None:
+    """Search Pexels for a relevant image and return the URL."""
+    if not PEXELS_API_KEY:
+        log.warning("PEXELS_API_KEY not set, skipping image fetch")
+        return None
+
+    try:
+        headers = {"Authorization": PEXELS_API_KEY}
+        params = {"query": query, "per_page": 5, "orientation": "landscape"}
+        resp = requests.get(
+            "https://api.pexels.com/v1/search",
+            headers=headers,
+            params=params,
+            timeout=10,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        photos = data.get("photos", [])
+        if not photos:
+            log.warning(f"No Pexels results for: {query}")
+            return None
+
+        # Pick the first landscape photo, use the 'large' size
+        photo = photos[0]
+        image_url = photo["src"].get("large2x") or photo["src"].get("large")
+        log.info(f"Pexels image found: {image_url[:80]}...")
+        return image_url
+
+    except Exception as e:
+        log.error(f"Pexels image fetch failed: {e}")
+        return None
 
 
 def generate_editorial(articles: list) -> dict | None:
@@ -75,7 +112,7 @@ def generate_editorial(articles: list) -> dict | None:
         client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
         message = client.messages.create(
             model=ANTHROPIC_MODEL,
-            max_tokens=2000,
+            max_tokens=3000,
             messages=[{"role": "user", "content": prompt}],
         )
 
@@ -96,6 +133,14 @@ def generate_editorial(articles: list) -> dict | None:
         slug = hashlib.md5(editorial["title"].encode()).hexdigest()[:10]
         editorial["url"] = f"https://cinelist.pro/editorial/{date_str}-{slug}"
         editorial["published_at"] = now.isoformat()
+
+        # Fetch a relevant image from Pexels
+        image_query = editorial.get("image_search", "cinema camera filmmaking")
+        image_url = _fetch_pexels_image(image_query)
+        if image_url:
+            editorial["image_url"] = image_url
+        else:
+            editorial["image_url"] = None
 
         log.info(f"Editorial generated: {editorial['title'][:60]}")
         return editorial

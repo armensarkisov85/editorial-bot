@@ -1,0 +1,7 @@
+# railway.toml
+# Editorial bot - runs once daily at 10:00 UTC.
+# Reads recent cinema news and writes an original editorial.
+
+[deploy]
+startCommand = "python main.py"
+cronSchedule = "0 10 * * *"

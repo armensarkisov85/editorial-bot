@@ -28,3 +28,6 @@ AUTHOR_BYLINE = f"{AUTHOR_NAME}, {AUTHOR_TITLE}"
 
 # ── How many recent articles to read for context ──────────────────────
 RECENT_ARTICLES_LIMIT = 20
+
+# ── Pexels API (free, for editorial images) ───────────────────────────
+PEXELS_API_KEY = os.environ.get("PEXELS_API_KEY", "")

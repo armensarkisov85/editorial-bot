@@ -60,9 +60,16 @@ def save_editorial(editorial: dict) -> bool:
     """Save the generated editorial to the cinema_news table."""
     try:
         db = get_client()
+
+        # Combine the teaser summary and full body into one field
+        # so the full editorial is displayed on the site.
+        full_content = editorial.get("summary", "")
+        if editorial.get("body"):
+            full_content = editorial["summary"] + "\n\n" + editorial["body"]
+
         row = {
             "title": editorial["title"][:500],
-            "summary": editorial["summary"],
+            "summary": full_content,
             "source": "CineList Editorial",
             "url": editorial["url"],
             "published_at": editorial["published_at"],

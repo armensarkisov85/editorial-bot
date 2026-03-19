@@ -6,15 +6,8 @@ Environment variables and constants.
 import os
 
 # ── Supabase (same project as cinema-bot) ──────────────────────────────
-SUPABASE_URL = "https://ypzdefbymopkbwlacrij.supabase.co"
-SUPABASE_KEY = (
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-    ".eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inlw"
-    "emRlZmJ5bW9wa2J3bGFjcmlqIiwicm9sZSI6Im"
-    "Fub24iLCJpYXQiOjE3NzI2MzAxODksImV4cCI6"
-    "MjA4ODIwNjE4OX0.pTbbSNhF4yzfqvN1P1kvCey"
-    "Z2HR-_fGWJ4tremlQ_EY"
-)
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "")
 SUPABASE_TABLE = "cinema_news"
 
 # ── Anthropic API ──────────────────────────────────────────────────────

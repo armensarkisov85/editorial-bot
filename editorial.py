@@ -43,7 +43,7 @@ Based on these recent stories, write an ORIGINAL EDITORIAL that:
 - Identifies a compelling trend, tension, or insight connecting one or more of these stories
 - Offers your professional opinion and analysis (not just a summary)
 - Is relevant and useful to working camera department professionals
-- Has a strong, attention-grabbing headline
+- Has a clear, factual headline — no hype, no clickbait, no dramatic metaphors (never use words like "wars," "arms race," "revolution," "game-changer," "battle," "race"). Write headlines the way CineD or American Cinematographer would
 - Is 5-7 paragraphs long with substantial, detailed analysis in each paragraph
 - Feels like a column in American Cinematographer or No Film School
 
